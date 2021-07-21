@@ -86,8 +86,13 @@ int main ( int argc, char** argv )
             std::cout<<"\Failed! frame " << filename << " not added into BundleFusion." << std::endl;
         }
     }
-    
-    while(cv::waitKey (20) != 'q');
+
+    std::string Filename;
+
+    std::cout << "Enter filename with .ply extension..." << std::endl;
+    std::cin >> Filename;
+
+    saveMeshIntoFile(Filename, true);  
 
 
     deinitBundleFusion();
