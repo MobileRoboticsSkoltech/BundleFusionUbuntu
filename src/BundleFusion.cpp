@@ -32,18 +32,10 @@
 #include <fstream>
 #include <unistd.h>
 
-#ifdef WITH_VISUALIZATION
-#include <Output3DWrapper.h>
-#include <PangolinOutputWrapper.h>
-#endif
-
 // Variables
 RGBDSensor* g_RGBDSensor = nullptr;
 CUDAImageManager* g_imageManager = nullptr;
 OnlineBundler* g_bundler = nullptr;
-#ifdef WITH_VISUALIZATION
-Visualization::Output3DWrapper * wrapper = nullptr;
-#endif
 
 //--------------------------------------------------------------------------------------
 // Global variables
@@ -139,9 +131,6 @@ bool initBundleFusion ( std::string app_config, std::string bundle_config )
 
         dualGPU.setDevice ( DualGPU::DEVICE_RECONSTRUCTION );	//main gpu
 
-#ifdef WITH_VISUALIZATION
-        wrapper = new Visualization::PangolinOutputWrapper ( GlobalAppState::get().s_integrationWidth,GlobalAppState::get().s_integrationHeight );
-#endif
 
         if ( !CreateDevice() )
         {
@@ -293,90 +282,6 @@ bool processInputRGBDFrame ( cv::Mat& rgb, cv::Mat& depth )
                                      GlobalBundlingState::get().s_numGlobalNonLinIterations, GlobalBundlingState::get().s_numGlobalLinIterations );
 #endif
 
-#ifdef WITH_VISUALIZATION
-    if ( wrapper != nullptr )
-    {
-        // raw color image
-        const uchar4* d_color = g_imageManager->getLastIntegrateFrame().getColorFrameCPU();
-        // raw depth image
-        const float* d_depth = g_imageManager->getLastIntegrateFrame().getDepthFrameCPU();
-        const float minDepth = GlobalAppState::get().s_sensorDepthMin;
-        const float maxDepth = GlobalAppState::get().s_sensorDepthMax;
-
-        // publish these data
-        if ( publish_rgb )
-        {
-            wrapper->publishColorMap ( d_color );
-        }
-
-        if ( publish_depth )
-        {
-            wrapper->publishDepthMap ( d_depth );
-        }
-
-        if ( publish_mesh )
-        {
-            // surface get
-            MarchingCubesData* march_cube = nullptr;
-
-            if ( surface_read_count == 1 )
-            {
-                surface_read_count = 0;
-
-                if ( GlobalAppState::get().s_sensorIdx == 7 ) //! hack for structure sensor
-                {
-                    std::cout << "[marching cubes] stopped receiving frames from structure sensor" << std::endl;
-                    g_RGBDSensor->stopReceivingFrames();
-                }
-
-                Timer t;
-
-                march_cube = g_marchingCubesHashSDF->extractIsoSurfaceGPUNoChrunk ( g_sceneRep->getHashData(), g_sceneRep->getHashParams(), g_rayCast->getRayCastData() );
-
-                std::cout << "Mesh generation time " << t.getElapsedTime() << " seconds" << std::endl;
-            }
-            else
-            {
-                surface_read_count++;
-            }
-
-            if ( march_cube != nullptr )
-            {
-                wrapper->publishSurface ( march_cube );
-            }
-
-            std::vector<mat4f> trajectory;
-            g_bundler->getTrajectoryManager()->getOptimizedTransforms ( trajectory );
-            float* trajs_float = new float[3 * trajectory.size()];
-            float* pose = new float[16];
-            for ( size_t i = 0; i < trajectory.size(); ++i )
-            {
-                trajs_float[3*i + 0] = trajectory[i][3];
-                trajs_float[3*i + 1] = trajectory[i][7];
-                trajs_float[3*i + 2] = trajectory[i][11];
-                if ( i == trajectory.size()-1 )
-                {
-                    mat4f& last_pose = trajectory[i];
-                    last_pose.transpose();
-                    for ( size_t j = 0; j < 16; ++j )
-                        pose[j] = last_pose[j];
-                }
-
-            }
-
-            wrapper->publishAllTrajetory ( trajs_float, trajectory.size() );
-
-
-            wrapper->publishCurrentCameraPose ( pose );
-//
-            delete pose;
-
-            delete trajs_float;
-
-        }
-
-    }
-#endif
 
     return true;
 
@@ -460,12 +365,6 @@ bool deinitBundleFusion()
     auto* s = getRGBDSensor();
     SAFE_DELETE ( s );
 
-#ifdef WITH_VISUALIZATION
-    if ( wrapper != nullptr )
-    {
-        wrapper->noticeFinishFlag();
-    }
-#endif
 
     return true;
 

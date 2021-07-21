@@ -5,8 +5,6 @@ set(CMAKE_BUILD_TYPE Release)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fpermissive -pthread -lrt -fPIC")
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
-option(VISUALIZATION "Build BundleFusion With Pangolin" ON)
-
 find_package(CUDA REQUIRED)
 set(CUDA_USE_STATIC_CUDA_RUNTIME OFF)
 set(CUDA_SEPARABLE_COMPILATION ON)
@@ -20,27 +18,6 @@ find_package (OpenCV REQUIRED)
 
 file(GLOB_RECURSE cpp_file src/*.cpp)
 file(GLOB_RECURSE cu_file src/*.cu)
-
-if(VISUALIZATION)
-  find_package(Pangolin 0.2 QUIET)
-  message("-- found PANGOLIN, add visualization plug.")
-  if(Pangolin_FOUND)
-    find_package(Boost COMPONENTS system thread)
-    add_definitions(-DWITH_VISUALIZATION)
-    include_directories(
-      ${Pangolin_INCLUDE_DIRS}
-      ${Boost_INCLUDE_DIRS}
-      ${PROJECT_SOURCE_DIR}/include/Visualization/
-    )
-    
-  endif()
-else()
-  message("-- not found PANGOLIN, visualization not enable.")
-  file(GLOB_RECURSE Visualization_CPP_Files src/PangolinOutputWrapper.cpp)
-  file(GLOB_RECURSE Visualization_CU_Files src/PangolinOutputWrapper.cu)
-  list(REMOVE_ITEM cpp_file ${Visualization_CPP_Files})
-  list(REMOVE_ITEM cu_file ${Visualization_CU_Files}) 
-endif()
 
 include_directories(
   ${CUDA_INCLUDE_DIRS}
