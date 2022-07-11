@@ -19,8 +19,9 @@ PrimeSenseSensor::~PrimeSenseSensor()
 
 void PrimeSenseSensor::createFirstConnected()
 {
-
-    RGBDSensor::init ( 640, 480, 640, 480, 1 );
+    const auto width =  GlobalAppState::get().s_dataWidth;
+    const auto height = GlobalAppState::get().s_dataHeight;
+    RGBDSensor::init ( width, height, width, height, 1 );
     initializeDepthIntrinsics ( GlobalAppState::get().s_cameraIntrinsicFx,
                                 GlobalAppState::get().s_cameraIntrinsicFy,
                                 GlobalAppState::get().s_cameraIntrinsicCx,

@@ -35,6 +35,8 @@
 	X(float, s_cameraIntrinsicFy) \
 	X(float, s_cameraIntrinsicCx) \
 	X(float, s_cameraIntrinsicCy) \
+	X(uint, s_dataWidth) \
+	X(uint, s_dataHeight) \
 	X(uint, s_hashNumBuckets) \
 	X(uint, s_hashNumSDFBlocks) \
 	X(uint, s_hashMaxCollisionLinkedListSize) \

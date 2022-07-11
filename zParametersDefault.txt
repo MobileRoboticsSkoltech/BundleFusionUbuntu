@@ -120,4 +120,5 @@ s_cameraIntrinsicFy = 583;
 s_cameraIntrinsicCx = 320;
 s_cameraIntrinsicCy = 240;
 s_generateMeshDir = "./"
-
+s_dataWidth=640;
+s_dataHeight=480
