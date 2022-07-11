@@ -87,10 +87,7 @@ int main ( int argc, char** argv )
         }
     }
 
-    std::string Filename;
-
-    std::cout << "Enter filename with .ply extension..." << std::endl;
-    std::cin >> Filename;
+    std::string Filename = "mesh.ply";
 
     saveMeshIntoFile(Filename, true);  
 
