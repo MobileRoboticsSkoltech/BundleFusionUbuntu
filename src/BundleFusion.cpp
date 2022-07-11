@@ -353,6 +353,10 @@ bool deinitBundleFusion()
     g_bundler->confirmProcessedInputFrame();		//release all bundling locks
     ConditionManager::release ( ConditionManager::Recon ); // release bundling locks
 
+    std::vector<mat4f> trajectory;
+    g_bundler->getTrajectoryManager()->getOptimizedTransforms ( trajectory );
+    PoseHelper::saveToPoseFile(GlobalAppState::get().s_generateMeshDir + "poseFile.txt", trajectory);
+
     if ( bundlingThread->joinable() )
         bundlingThread->join();	//wait for the bundling thread to return;
 #endif
